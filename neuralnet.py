@@ -5,6 +5,7 @@ import numpy as np
 import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
 from datetime import datetime
+from sklearn.metrics import f1_score
 
 #creates log directory for tensorboard
 now = datetime.utcnow().strftime("%Y%m%d%H%M%S")
@@ -84,18 +85,22 @@ file_writer = tf.summary.FileWriter(logdir, tf.get_default_graph())
 
 #execution of neural net
 with tf.Session() as sess:
-    sess.run(init)
-    for epoch in range(n_epochs): #how long to train for
-        for batch_index in range(n_batches):
-            X_batch, y_batch = fetch_batch(epoch, batch_index, batch_size) #fetches each mini-batch
-            if batch_index % 10 == 0: #prints out step statistics to tenserboard
-                summary_step = loss_summary.eval(feed_dict={X: X_batch, y: y_batch})
-                step = epoch * n_batches + batch_index
-                file_writer.add_summary(summary_step, step)
-            sess.run(training_op, feed_dict={X: X_batch, y: y_batch})
-        acc_train = accuracy.eval(feed_dict={X: X_batch, y: y_batch})
-        print(epoch, "Train accuracy:", acc_train) # prints out accuracy of output nodes of neural net(ie how good the output nodes performing)
-    save_path = saver.save(sess, "/Users/adam/Desktop/Project_ML/neuralNet_savemodel")
+    saver.restore(sess, "/Users/adam/Desktop/Project_ML/machineLearning_finalProject/checkpoint")
+    # for epoch in range(n_epochs): #how long to train for
+    #     for batch_index in range(n_batches):
+    #         X_batch, y_batch = fetch_batch(epoch, batch_index, batch_size) #fetches each mini-batch
+    #         if batch_index % 10 == 0: #prints out step statistics to tenserboard
+    #             summary_step = loss_summary.eval(feed_dict={X: X_batch, y: y_batch})
+    #             step = epoch * n_batches + batch_index
+    #             file_writer.add_summary(summary_step, step)
+    #         sess.run(training_op, feed_dict={X: X_batch, y: y_batch})
+    #     acc_train = accuracy.eval(feed_dict={X: X_batch, y: y_batch})
+    #     print(epoch, "Train accuracy:", acc_train) # prints out accuracy of output nodes of neural net(ie how good the output nodes performing)
+    # save_path = saver.save(sess, "/Users/adam/Desktop/Project_ML/neuralNet_savemodel")
+    Z=logits.eval(feed_dict={X: X_test})
+    y_pred = np.argmax(Z, axis=1)
+    print(f1_score(y_test, y_pred))
+    
 
 
 
