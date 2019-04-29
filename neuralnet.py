@@ -36,7 +36,7 @@ X= X.to_numpy()
 scaler = StandardScaler()
 X = scaler.fit_transform(X)
 #Splitting data into train and test (probably need to change due to it not being alot of data)
-X_train, X_test, y_train, y_test = X[:2000], X[2000:], y[:2000], y[2000:]
+X_train, X_test, y_train, y_test = X[:3500], X[3500:], y[:3500], y[3500:]
 #gets the shape of the training set
 m, n = X_train.shape
 
@@ -48,11 +48,11 @@ n_inputs = 24
 #number of hidden neurons in layer 1 (can tweak for extra performacne)
 n_hidden1= 300
 #number of hidden neurons in layer 2 (can tweak for extra performance)
-n_hidden2=100
+n_hidden2=150
 #number of outputs 
 n_outputs=5
 #how long to train for
-n_epochs = 100
+n_epochs = 90
 #learning rate (can tweak for extra performance)
 learning_rate = 0.01
 #how many instaces to feed the network on each training step (can tweak for performance)
@@ -77,7 +77,7 @@ with tf.name_scope("eval"): #evaulates the output before entering softmax regres
     correct = tf.nn.in_top_k(logits, y, 1)
     accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
 init = tf.global_variables_initializer()
-# saver = tf.train.Saver() #saves the model 
+saver = tf.train.Saver() #saves the model 
 loss_summary = tf.summary.scalar("loss", loss) #creates node for evaluation of loss func on tenserboard
 file_writer = tf.summary.FileWriter(logdir, tf.get_default_graph())
 
@@ -95,6 +95,7 @@ with tf.Session() as sess:
             sess.run(training_op, feed_dict={X: X_batch, y: y_batch})
         acc_train = accuracy.eval(feed_dict={X: X_batch, y: y_batch})
         print(epoch, "Train accuracy:", acc_train) # prints out accuracy of output nodes of neural net(ie how good the output nodes performing)
+    save_path = saver.save(sess, "/Users/adam/Desktop/Project_ML/neuralNet_savemodel")
 
 
 
