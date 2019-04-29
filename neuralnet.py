@@ -36,7 +36,7 @@ X= X.to_numpy()
 scaler = StandardScaler()
 X = scaler.fit_transform(X)
 #Splitting data into train and test (probably need to change due to it not being alot of data)
-X_train, X_test, y_train, y_test = X[:3500], X[3500:], y[:3500], y[3500:]
+X_train, X_test, y_train, y_test = X[:2000], X[2000:], y[:2000], y[2000:]
 #gets the shape of the training set
 m, n = X_train.shape
 
@@ -52,7 +52,7 @@ n_hidden2=100
 #number of outputs 
 n_outputs=5
 #how long to train for
-n_epochs = 10
+n_epochs = 100
 #learning rate (can tweak for extra performance)
 learning_rate = 0.01
 #how many instaces to feed the network on each training step (can tweak for performance)
