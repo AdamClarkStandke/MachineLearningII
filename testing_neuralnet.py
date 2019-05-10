@@ -1,4 +1,5 @@
-#neural network Softmax regression
+#created by Adam Standke
+#code that test's the neural network
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -26,7 +27,7 @@ def fetch_batch(epoch, batch_index, batch_size):
     return X_batch, y_batch
 
 
-#getting data and spliting it(have to work on this )
+#getting data and spliting it
 robot = load_robot_data()
 y = robot["Class"]
 X = robot[["V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9", "V10", "V11", "V12", "V13", "V14", "V15", "V16", "V17", "V18", "V19", "V20", "V21", "V22", "V23", "V24" ]]
@@ -36,7 +37,7 @@ X= X.to_numpy()
 #scaling the data before feeding it to neural net
 scaler = StandardScaler()
 X = scaler.fit_transform(X)
-#Splitting data into train and test (probably need to change due to it not being alot of data)
+#Splitting data into train and test 
 X_train, X_test, y_train, y_test = X[:3500], X[3500:], y[:3500], y[3500:]
 #gets the shape of the training set
 m, n = X_train.shape
@@ -46,16 +47,16 @@ m, n = X_train.shape
 
 #number of features
 n_inputs = 24
-#number of hidden neurons in layer 1 (can tweak for extra performacne)
-n_hidden1= 300
-#number of hidden neurons in layer 2 (can tweak for extra performance)
-n_hidden2=150
+#number of hidden neurons in layer 1 
+n_hidden1= 200
+#number of hidden neurons in layer 2 
+n_hidden2=100
 #number of outputs 
 n_outputs=5
 #how long to train for
 n_epochs = 90
 #learning rate (can tweak for extra performance)
-learning_rate = 0.01
+learning_rate = 0.05
 #how many instaces to feed the network on each training step (can tweak for performance)
 batch_size = 100
 n_batches = int(np.ceil(m/batch_size))
@@ -68,7 +69,7 @@ with tf.name_scope("dnn"): #links the layers of nerual net
     hidden1 = tf.layers.dense(X, n_hidden1, name="hidden1", activation=tf.nn.relu)
     hidden2 = tf.layers.dense(hidden1, n_hidden2, name="hidden2", activation=tf.nn.relu)
     logits = tf.layers.dense(hidden2, n_outputs, name="outputs")
-with tf.name_scope("loss"): #uses cross entropy for loss function
+with tf.name_scope("loss"): #uses cross entropy for the loss function
     xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y, logits=logits)
     loss = tf.reduce_mean(xentropy, name="loss")
 with tf.name_scope("train"): #trains the neural net
@@ -78,30 +79,14 @@ with tf.name_scope("eval"): #evaulates the output before entering softmax regres
     correct = tf.nn.in_top_k(logits, y, 1)
     accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
 init = tf.global_variables_initializer()
-saver = tf.train.Saver() #saves the model 
-loss_summary = tf.summary.scalar("loss", loss) #creates node for evaluation of loss func on tenserboard
-file_writer = tf.summary.FileWriter(logdir, tf.get_default_graph())
+saver = tf.train.Saver() #creates a save unit in graph 
+loss_summary = tf.summary.scalar("loss", loss) #creates unit for evaluation of loss function on tenserboard
+file_writer = tf.summary.FileWriter(logdir, tf.get_default_graph())#writes information of graph into the log directory
 
 
-#execution of neural net
+#tests the saved neural network by restoring the trained graph
 with tf.Session() as sess:
-    sess.run(init)
     saver.restore(sess, "/Users/adam/Desktop/Project_ML/neuralNet_savemodel.ckpt")
-    # for epoch in range(n_epochs): #how long to train for
-    #     for batch_index in range(n_batches):
-    #         X_batch, y_batch = fetch_batch(epoch, batch_index, batch_size) #fetches each mini-batch
-    #         if batch_index % 10 == 0: #prints out step statistics to tenserboard
-    #             summary_step = loss_summary.eval(feed_dict={X: X_batch, y: y_batch})
-    #             step = epoch * n_batches + batch_index
-    #             file_writer.add_summary(summary_step, step)
-    #         sess.run(training_op, feed_dict={X: X_batch, y: y_batch})
-    #     acc_train = accuracy.eval(feed_dict={X: X_batch, y: y_batch})
-    #     print(epoch, "Train accuracy:", acc_train) # prints out accuracy of output nodes of neural net(ie how good the output nodes performing)
-    # save_path = saver.save(sess, "/Users/adam/Desktop/Project_ML/neuralNet_savemodel.ckpt")
-    Z=logits.eval(feed_dict={X: X_test})
-    y_pred = np.argmax(Z, axis=1)
-    print(f1_score(y_test, y_pred, average='macro'))
-    
-
-
-
+    Z=logits.eval(feed_dict={X: X_test}) #input the the test set into the neural network 
+    y_pred = np.argmax(Z, axis=1) #contains the predicted values from the neural network
+    print(f1_score(y_test, y_pred, average='weighted')) #compare predicted values to acutal values and output f1 score
